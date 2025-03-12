@@ -1,7 +1,9 @@
 [package]
 name = "gh_runner_uptime"
 version = "1.0.1"
+authors = ["Christopher Besch <christopher.besch@ibm.com>"]
 edition = "2021"
+license = "MIT"
 [[bin]]
 name = "gh_runner_uptime"
 path = "src/main.rs"

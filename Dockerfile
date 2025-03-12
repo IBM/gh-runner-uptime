@@ -26,4 +26,4 @@ COPY --from=builder /usr/src/gh_runner_uptime/target/x86_64-unknown-linux-musl/r
 WORKDIR /app
 ENTRYPOINT ["/gh_runner_uptime"]
 
-LABEL org.opencontainers.image.source=https://github.ibmgcloud.net/dth/gh_runner_uptime
+LABEL org.opencontainers.image.source https://github.com/IBM/gh_runner_uptime
