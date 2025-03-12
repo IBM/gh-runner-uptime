@@ -1,12 +1,12 @@
 use anyhow::{ensure, Context, Result};
-use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::{Client, ClientBuilder};
 use serde::Deserialize;
 use serde_yaml::from_reader;
 use std::fs::File;
 use std::time::Duration;
 
-use crate::github::get_all_runners;
+use crate::github::{
+    get_all_runners, get_github_client, get_github_org_endpoint, get_github_repo_endpoint,
+};
 use crate::structs::RunnerSetConfig;
 use crate::structs::{Config, RunnerMap};
 
@@ -50,10 +50,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         .map(|org| -> Result<RunnerSetConfig> {
             Ok(RunnerSetConfig {
                 name: format!("org: {}; github: {}", org.name, org.github_base_uri),
-                github_endpoint: format!(
-                    "{}/orgs/{}/actions/runners",
-                    org.github_base_uri, org.name
-                ),
+                github_endpoint: get_github_org_endpoint(&org.github_base_uri, &org.name),
                 webhook_endpoint: org.webhook_endpoint,
                 github_client: get_github_client(github_timeout, &org.github_pat)?,
             })
@@ -64,10 +61,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         .map(|repo| -> Result<RunnerSetConfig> {
             Ok(RunnerSetConfig {
                 name: format!("repo: {}; github: {}", repo.name, repo.github_base_uri),
-                github_endpoint: format!(
-                    "{}/repos/{}/actions/runners",
-                    repo.github_base_uri, repo.name
-                ),
+                github_endpoint: get_github_repo_endpoint(&repo.github_base_uri, &repo.name),
                 webhook_endpoint: repo.webhook_endpoint,
                 github_client: get_github_client(github_timeout, &repo.github_pat)?,
             })
@@ -85,31 +79,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         github_timeout,
         inbound_timeout,
     };
-    println!("attempting GitHub connections");
+    println!("Attempting GitHub connections");
     let runners = get_all_runners(&cfg).await?;
     Ok((cfg, runners))
-}
-
-fn get_github_client(timeout: Duration, pat: &str) -> Result<Client> {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        "Accept",
-        HeaderValue::from_static("application/vnd.github+json"),
-    );
-    headers.insert(
-        "Authorization",
-        HeaderValue::from_str(&format!("Bearer {}", pat))?,
-    );
-    headers.insert(
-        "X-GitHub-Api-Version",
-        HeaderValue::from_static("2022-11-28"),
-    );
-    let client = ClientBuilder::new()
-        .https_only(true)
-        .user_agent("github uptime monitor")
-        .default_headers(headers)
-        .timeout(timeout)
-        .build()?;
-
-    Ok(client)
 }

@@ -14,5 +14,3 @@ Cargo.lock
 *.pdb
 
 config.yaml
-
-ansible/.vault_pass

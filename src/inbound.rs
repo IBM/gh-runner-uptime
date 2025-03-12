@@ -4,6 +4,7 @@ use serde::Serialize;
 
 use crate::structs::Config;
 
+// the struct to be serialized and sent to the inbound webhook
 #[derive(Debug, Serialize)]
 struct JSONInboundEvent {
     summary: String,
@@ -42,7 +43,7 @@ pub async fn send_inbound(
         .context("webhook request failed")?;
     if !resp.status().is_success() {
         bail!(
-            "webhook request returned status {} for {}; return body: {}",
+            "webhook request returned status {} for '{}'; return body: {}",
             resp.status(),
             summary,
             resp.text().await?

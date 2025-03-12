@@ -1,4 +1,6 @@
 use alert::alert_all_changes;
+use anyhow::Result;
+use structs::{Config, RunnerMap};
 use tokio::signal::unix::{signal, SignalKind};
 
 use crate::github::get_all_runners;
@@ -9,34 +11,31 @@ mod github;
 mod inbound;
 mod structs;
 
+async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
+    println!("Received sighup; starting scan");
+    let new_runners = get_all_runners(cfg).await?;
+    alert_all_changes(cfg, runners, &new_runners).await?;
+    // only update runners when changes got transmitted successfully
+    // -> retry next time when the service remains in the same new state
+    *runners = new_runners;
+    println!("Scan complete; {} runners found", runners.len());
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
     let (cfg, mut runners) = config::load_cfg("./config.yaml")
         .await
         .unwrap_or_else(|e| panic!("{:#}", e));
 
-    println!("awaiting sighup");
+    println!("Awaiting sighup");
     // wait for sighup from docker_cron container
     let mut stream = signal(SignalKind::hangup()).unwrap();
     loop {
         // all errors in this loop only restart the loop, the program doesn't crash any more
         stream.recv().await;
-        println!("received sighup; starting scan");
-        let new_runners = match get_all_runners(&cfg).await {
-            Ok(r) => r,
-            Err(e) => {
-                eprintln!("{:#}", e);
-                continue;
-            }
-        };
-        match alert_all_changes(&cfg, &runners, &new_runners).await {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("{:#}", e);
-                continue;
-            }
-        }
-        runners = new_runners;
-        println!("scan complete; {} runners found", runners.len());
+        perform_scan(&cfg, &mut runners)
+            .await
+            .unwrap_or_else(|e| eprintln!("{:#}", e));
     }
 }

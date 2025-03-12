@@ -52,78 +52,52 @@ async fn send_alert(
     old_runner: Option<&Runner>,
     new_runner: Option<&Runner>,
 ) -> Result<()> {
-    match change {
+    let (endpoint, msg, summary) = match change {
         RunnerStateChange::Created => {
             ensure!(old_runner.is_none());
             let new_runner =
                 new_runner.context("new_runner needs to be defined when runner created")?;
-
             let msg = format!(
                 "Now created Runner:\n{}",
                 serde_json::to_string_pretty(new_runner)?
             );
-
-            send_inbound(
-                cfg,
-                &new_runner.webhook_endpoint,
-                &msg,
-                "Created new Runner",
-            )
-            .await?
+            (&new_runner.webhook_endpoint, msg, "Created new Runner")
         }
         RunnerStateChange::Removed => {
             let old_runner =
                 old_runner.context("old_runner needs to be defined when runner removed")?;
             ensure!(new_runner.is_none());
-
             let msg = format!(
                 "Now removed Runner:\n{}",
                 serde_json::to_string_pretty(old_runner)?,
             );
-
-            send_inbound(cfg, &old_runner.webhook_endpoint, &msg, "Removed Runner").await?
+            (&old_runner.webhook_endpoint, msg, "Removed Runner")
         }
         RunnerStateChange::Offline => {
             let old_runner =
                 old_runner.context("old_runner needs to be defined when runner went offline")?;
             let new_runner =
                 new_runner.context("new_runner needs to be defined when runner went offline")?;
-
             let msg = format!(
                 "Old Runner:\n{}\n\nNew Runner:\n{}",
                 serde_json::to_string_pretty(old_runner)?,
                 serde_json::to_string_pretty(new_runner)?
             );
-
-            send_inbound(
-                cfg,
-                &new_runner.webhook_endpoint,
-                &msg,
-                "Runner went Offline",
-            )
-            .await?
+            (&new_runner.webhook_endpoint, msg, "Runner went Offline")
         }
         RunnerStateChange::Online => {
             let old_runner =
                 old_runner.context("old_runner needs to be defined when runner came online")?;
             let new_runner =
                 new_runner.context("new_runner needs to be defined when runner came online")?;
-
             let msg = format!(
                 "Old Runner:\n{}\n\nNew Runner:\n{}",
                 serde_json::to_string_pretty(old_runner)?,
                 serde_json::to_string_pretty(new_runner)?
             );
-
-            send_inbound(
-                cfg,
-                &new_runner.webhook_endpoint,
-                &msg,
-                "Runner came Online",
-            )
-            .await?
+            (&new_runner.webhook_endpoint, msg, "Runner came Online")
         }
-    }
+    };
 
-    Ok(())
+    send_inbound(cfg, endpoint, &msg, summary).await
 }

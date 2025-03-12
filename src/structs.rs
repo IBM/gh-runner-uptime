@@ -8,6 +8,8 @@ pub struct Config {
     pub github_timeout: Duration,
     pub inbound_timeout: Duration,
 }
+// a runner set is all the runners that belong to a repo or org or enterprise
+// one runner set will be queried per github request
 #[derive(Debug)]
 pub struct RunnerSetConfig {
     pub name: String,
@@ -16,6 +18,7 @@ pub struct RunnerSetConfig {
     pub github_client: Client,
 }
 
+// this runner struct will be serialized for the webhook message body
 #[derive(Debug, Serialize)]
 pub struct Runner {
     pub utc_ping_time: String,
