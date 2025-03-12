@@ -140,3 +140,11 @@ pub fn get_github_repo_endpoint(base_uri: &str, repo_name: &str) -> String {
 pub fn get_github_org_endpoint(base_uri: &str, org_name: &str) -> String {
     format!("{}/orgs/{}/actions/runners", base_uri, org_name)
 }
+
+// https://docs.github.com/en/enterprise-server@3.12/rest/actions/self-hosted-runners?apiVersion=2022-11-28#list-self-hosted-runners-for-an-enterprise
+pub fn get_github_enterprise_endpoint(base_uri: &str, enterprise_name: &str) -> String {
+    format!(
+        "{}/enterprises/{}/actions/runners",
+        base_uri, enterprise_name
+    )
+}

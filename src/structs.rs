@@ -26,7 +26,7 @@ pub struct Config {
     // used for testing
     pub allow_http: bool,
 }
-// a runner set is all the runners that belong to a repo or org or enterprise
+// a runner set is all the runners that belong to a repo, org or enterprise
 // one runner set will be queried per github request
 #[derive(Debug)]
 pub struct RunnerSetConfig {

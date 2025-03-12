@@ -5,7 +5,8 @@ use std::fs::File;
 use std::time::Duration;
 
 use crate::github::{
-    get_all_runners, get_github_client, get_github_org_endpoint, get_github_repo_endpoint,
+    get_all_runners, get_github_client, get_github_enterprise_endpoint, get_github_org_endpoint,
+    get_github_repo_endpoint,
 };
 use crate::structs::RunnerSetConfig;
 use crate::structs::{Config, RunnerMap};
@@ -16,6 +17,8 @@ struct YAMLConfig {
     pub orgs: Vec<RunnerSetYAMLConfig>,
     #[serde(default)]
     pub repos: Vec<RunnerSetYAMLConfig>,
+    #[serde(default)]
+    pub enterprises: Vec<RunnerSetYAMLConfig>,
     pub grace_period: u32,
     #[serde(default = "default_timeout_millis")]
     pub github_timeout_millis: u64,
@@ -29,7 +32,7 @@ struct YAMLConfig {
 }
 #[derive(Debug, Deserialize)]
 struct RunnerSetYAMLConfig {
-    // org or repo string
+    // org, repo or enterprise slug name
     pub name: String,
     pub github_base_uri: String,
     pub github_pat: String,
@@ -72,12 +75,35 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
                 github_client: get_github_client(github_timeout, &repo.github_pat, false)?,
             })
         });
+    let enterprise_runner_sets =
+        yml_cfg
+            .enterprises
+            .into_iter()
+            .map(|enterprise| -> Result<RunnerSetConfig> {
+                Ok(RunnerSetConfig {
+                    name: format!(
+                        "enterprise: {}; github: {}",
+                        enterprise.name, enterprise.github_base_uri
+                    ),
+                    github_endpoint: get_github_enterprise_endpoint(
+                        &enterprise.github_base_uri,
+                        &enterprise.name,
+                    ),
+                    webhook_endpoint: enterprise.webhook_endpoint,
+                    github_client: get_github_client(
+                        github_timeout,
+                        &enterprise.github_pat,
+                        false,
+                    )?,
+                })
+            });
     let runner_sets = org_runner_sets
         .chain(repo_runner_sets)
+        .chain(enterprise_runner_sets)
         .collect::<Result<Vec<_>>>()?;
     ensure!(
         !runner_sets.is_empty(),
-        "At least one repo or org needs to be defined."
+        "At least one repo, org or enterprise needs to be defined."
     );
 
     let cfg = Config {
