@@ -15,7 +15,7 @@ pub async fn alert_all_changes(
             Some(r) => r,
             None => {
                 // the runner doesn't exist no more
-                send_alert(&cfg, RunnerStateChange::Removed, Some(old_runner), None).await?;
+                send_alert(cfg, RunnerStateChange::Removed, Some(old_runner), None).await?;
                 continue;
             }
         };
@@ -25,7 +25,7 @@ pub async fn alert_all_changes(
         }
 
         send_alert(
-            &cfg,
+            cfg,
             if new_runner.online {
                 RunnerStateChange::Online
             } else {
@@ -40,7 +40,7 @@ pub async fn alert_all_changes(
     for (new_key, new_runner) in new_runners {
         if !old_runners.contains_key(new_key) {
             // the runner hasn't existed before
-            send_alert(&cfg, RunnerStateChange::Created, None, Some(new_runner)).await?;
+            send_alert(cfg, RunnerStateChange::Created, None, Some(new_runner)).await?;
         }
     }
     Ok(())

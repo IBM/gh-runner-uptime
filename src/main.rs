@@ -12,22 +12,36 @@ mod structs;
 
 #[tokio::main]
 async fn main() {
-    let (cfg, mut runners) = config::load_cfg("./config.yaml")
+    let (cfg, mut _runners) = config::load_cfg("./config.yaml")
         .await
         .unwrap_or_else(|e| panic!("{:#}", e));
 
+    println!("awaiting sighup");
     // wait for sighup from docker_cron container
     let mut stream = signal(SignalKind::hangup()).unwrap();
     loop {
+        // all errors in this loop only restart the loop, the program doesn't crash any more
         stream.recv().await;
 
+        println!("received sighup; starting scan");
         // TODO: remove
-        runners = RunnerMap::new();
+        let runners = RunnerMap::new();
 
-        let new_runners = get_all_runners(&cfg).await.unwrap();
-        alert_all_changes(&cfg, runners, &new_runners)
-            .await
-            .unwrap();
-        runners = new_runners;
+        let new_runners = match get_all_runners(&cfg).await {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("{:#}", e);
+                continue;
+            }
+        };
+        match alert_all_changes(&cfg, runners, &new_runners).await {
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("{:#}", e);
+                continue;
+            }
+        }
+        _runners = new_runners;
+        println!("scan complete");
     }
 }

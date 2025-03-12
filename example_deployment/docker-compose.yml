@@ -1,0 +1,19 @@
+services:
+    GitHubUptimeMonitor:
+        image: containers.github.ibmgcloud.net/dth/github-uptime-monitor:0.1.0
+        volumes:
+            - ./config.yaml:/app/config.yaml:ro
+        environment:
+            # when to perform ping
+            CRON_TIME: "* * * * *"
+        restart: unless-stopped
+        depends_on:
+            - DockerCron
+    DockerCron:
+        image: chrisbesch/docker_cron
+        volumes:
+            # path to docker socket
+            # `$XDG_RUNTIME_DIR/docker.sock` in rootless install,
+            # otherwise usually in `/var/run/docker.sock`
+            - "/var/run/docker.sock:/var/run/docker.sock:rw"
+        restart: unless-stopped
