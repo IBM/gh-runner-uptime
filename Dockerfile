@@ -9,7 +9,6 @@ COPY ./Cargo.toml ./Cargo.toml
 # only build dependencies to cache them
 COPY ./src/dummy.rs ./src/dummy.rs
 RUN sed -i 's#src/main.rs#src/dummy.rs#' Cargo.toml && \
-    cargo clippy -- -D warnings && \
     cargo build --target x86_64-unknown-linux-musl && \
     cargo build --release --target x86_64-unknown-linux-musl && \
     sed -i 's#src/dummy.rs#src/main.rs#' Cargo.toml
