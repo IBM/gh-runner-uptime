@@ -28,7 +28,7 @@ pub struct RunnerSetConfig {
 }
 
 // this runner struct will be serialized for the webhook message body
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, PartialEq, Clone, Hash, Eq)]
 pub struct Runner {
     pub utc_ping_time: String,
     // the state reflected in the inbound webhook events
@@ -50,17 +50,18 @@ pub struct Runner {
     pub webhook_endpoint: String,
 }
 
-pub enum RunnerStateChange<'a> {
+#[derive(Debug, PartialEq, Hash, Eq)]
+pub enum RunnerStateChange {
     // a new runner just popped up
-    Created(&'a Runner),
+    Created(Runner),
     // a known runner isn't there anymore
-    Removed(&'a Runner),
+    Removed(Runner),
     // a runner was online the last time and is now offline
     // old runner, new runner
-    Offline(&'a Runner, &'a Runner),
+    Offline(Runner, Runner),
     // a runner was offline the last time and is now online
     // old runner, new runner
-    Online(&'a Runner, &'a Runner),
+    Online(Runner, Runner),
 }
 
 pub type RunnerMap = HashMap<String, Runner>;

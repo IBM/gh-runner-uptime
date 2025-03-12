@@ -12,16 +12,20 @@ mod inbound_alert_handler;
 mod structs;
 
 #[cfg(test)]
-#[path = "./tests/alert_test.rs"]
-mod alert_test;
-// #[path = "./tests/test_alert_handler.rs"]
-// mod test_alert_handler;
+#[path = "./tests/alert_to_inbound_test.rs"]
+mod alert_to_inbound_test;
+#[cfg(test)]
+#[path = "./tests/alert_unit_test.rs"]
+mod alert_unit_test;
+#[cfg(test)]
+#[path = "./tests/test_alert_handler.rs"]
+mod test_alert_handler;
 
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
     let mut new_runners = get_all_runners(cfg, false).await?;
-    let alert_handler = InboundAlertHandler::new();
-    alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners, &alert_handler)
+    let mut alert_handler = InboundAlertHandler::new();
+    alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners, &mut alert_handler)
         .await?;
     // only update runners when changes got transmitted successfully
     // -> retry next time when the service remains in the same new state

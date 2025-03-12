@@ -3,14 +3,14 @@ use anyhow::{Context, Result};
 use crate::structs::{Config, RunnerMap, RunnerStateChange};
 
 pub trait AlertHandler {
-    async fn send_alert(&self, cfg: &Config, change: RunnerStateChange) -> Result<()>;
+    async fn send_alert(&mut self, cfg: &Config, change: RunnerStateChange) -> Result<()>;
 }
 
 pub async fn alert_all_changes_and_update_grace_period(
     cfg: &Config,
     old_runners: &RunnerMap,
     new_runners: &mut RunnerMap,
-    alert_handler: &impl AlertHandler,
+    alert_handler: &mut impl AlertHandler,
 ) -> Result<()> {
     for (old_key, old_runner) in old_runners {
         let new_runner = match new_runners.get_mut(old_key) {
@@ -18,7 +18,7 @@ pub async fn alert_all_changes_and_update_grace_period(
             None => {
                 // the runner doesn't exist no more
                 alert_handler
-                    .send_alert(cfg, RunnerStateChange::Removed(old_runner))
+                    .send_alert(cfg, RunnerStateChange::Removed(old_runner.clone()))
                     .await?;
                 continue;
             }
@@ -51,9 +51,9 @@ pub async fn alert_all_changes_and_update_grace_period(
             .send_alert(
                 cfg,
                 if new_runner.online_for_github_api {
-                    RunnerStateChange::Online(old_runner, new_runner)
+                    RunnerStateChange::Online(old_runner.clone(), new_runner.clone())
                 } else {
-                    RunnerStateChange::Offline(old_runner, new_runner)
+                    RunnerStateChange::Offline(old_runner.clone(), new_runner.clone())
                 },
             )
             .await?;
@@ -66,7 +66,7 @@ pub async fn alert_all_changes_and_update_grace_period(
             // this needs to be done before sending the alert
             new_runner.interpret_online = Some(new_runner.online_for_github_api);
             alert_handler
-                .send_alert(cfg, RunnerStateChange::Created(new_runner))
+                .send_alert(cfg, RunnerStateChange::Created(new_runner.clone()))
                 .await?;
         }
     }

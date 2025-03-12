@@ -19,41 +19,41 @@ struct JSONInboundEvent {
 pub struct InboundAlertHandler {}
 
 impl AlertHandler for InboundAlertHandler {
-    async fn send_alert<'a>(&self, cfg: &Config, change: RunnerStateChange<'a>) -> Result<()> {
+    async fn send_alert(&mut self, cfg: &Config, change: RunnerStateChange) -> Result<()> {
         let (endpoint, msg, summary) = match change {
             RunnerStateChange::Created(new_runner) => {
                 let msg = format!(
                     "Now created Runner:\n{}",
-                    serde_json::to_string_pretty(new_runner)?
+                    serde_json::to_string_pretty(&new_runner)?
                 );
-                (&new_runner.webhook_endpoint, msg, "Created new Runner")
+                (new_runner.webhook_endpoint, msg, "Created new Runner")
             }
             RunnerStateChange::Removed(old_runner) => {
                 let msg = format!(
                     "Now removed Runner:\n{}",
-                    serde_json::to_string_pretty(old_runner)?,
+                    serde_json::to_string_pretty(&old_runner)?,
                 );
-                (&old_runner.webhook_endpoint, msg, "Removed Runner")
+                (old_runner.webhook_endpoint, msg, "Removed Runner")
             }
             RunnerStateChange::Offline(old_runner, new_runner) => {
                 let msg = format!(
                     "Old Runner:\n{}\n\nNew Runner:\n{}",
-                    serde_json::to_string_pretty(old_runner)?,
-                    serde_json::to_string_pretty(new_runner)?
+                    serde_json::to_string_pretty(&old_runner)?,
+                    serde_json::to_string_pretty(&new_runner)?
                 );
-                (&new_runner.webhook_endpoint, msg, "Runner went Offline")
+                (new_runner.webhook_endpoint, msg, "Runner went Offline")
             }
             RunnerStateChange::Online(old_runner, new_runner) => {
                 let msg = format!(
                     "Old Runner:\n{}\n\nNew Runner:\n{}",
-                    serde_json::to_string_pretty(old_runner)?,
-                    serde_json::to_string_pretty(new_runner)?
+                    serde_json::to_string_pretty(&old_runner)?,
+                    serde_json::to_string_pretty(&new_runner)?
                 );
-                (&new_runner.webhook_endpoint, msg, "Runner came Online")
+                (new_runner.webhook_endpoint, msg, "Runner came Online")
             }
         };
 
-        self.send_inbound(cfg, endpoint, &msg, summary).await
+        self.send_inbound(cfg, &endpoint, &msg, summary).await
     }
 }
 
