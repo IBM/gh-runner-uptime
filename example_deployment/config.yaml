@@ -1,0 +1,37 @@
+# When this is set to 0 gh_runner_uptime sends an alert immediately when the status of a runner changes.
+# When this is set to n>0 gh_runner_uptime ignores short state changes that only last for n pings.
+# This does not affect the created and removed state change. These always result in an immediate alert.
+grace_period: 3
+# timeout for GitHub API request
+github_timeout_millis: 30000
+# timeout for Webhook request
+inbound_timeout_millis: 30000
+
+# the templates to be used for alert messages
+created_template_path: /app/created_template.txt.j2
+removed_template_path: /app/removed_template.txt.j2
+online_template_path: /app/online_template.txt.j2
+offline_template_path: /app/offline_template.txt.j2
+
+# monitor all self-hosted runners inside these GitHub repositories
+repos:
+    # the name of the repo
+  - name: test-org/test-repo
+    # For public GitHub this is: https://api.github.com
+    github_base_uri: https://github.example.com/api/v3
+    # A personal access token with the appropriate rights (described in README.md)
+    github_pat: some_pat
+    # the Webhook endpoint to be called
+    # This URL can contain URL parameters.
+    webhook_endpoint: https://example.com/event?token=sometoken
+  - name: test-org/some-other-repo
+    github_base_uri: https://github.example.com/api/v3
+    github_pat: some_pat
+    webhook_endpoint: https://example.com/event?token=sometoken
+# monitor all self-hosted runners inside these GitHub organisations
+orgs:
+    # the name of the org
+  - name: test-org2
+    github_base_uri: https://github.example.com/api/v3
+    github_pat: some_pat
+    webhook_endpoint: https://example.com/event?token=sometoken

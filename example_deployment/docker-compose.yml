@@ -1,8 +1,10 @@
+# This docker-compose.yml document creates two containers, gh_runner_uptime and docker_cron to send the SIGHUP signals.
 services:
     GitHubUptimeMonitor:
         image: containers.github.ibmgcloud.net/dth/github-uptime-monitor:0.2.0
         volumes:
             - ./config.yaml:/app/config.yaml:ro
+            # replace these with your own templates
             - ../src/tests/test_created_template.txt.j2:/app/created_template:ro
             - ../src/tests/test_removed_template.txt.j2:/app/removed_template:ro
             - ../src/tests/test_online_template.txt.j2:/app/online_template:ro
