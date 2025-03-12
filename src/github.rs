@@ -64,7 +64,9 @@ fn parse_runner(
 ) -> Result<(String, Runner)> {
     let runner = Runner {
         utc_ping_time: Utc::now().to_rfc3339(),
-        online: json_runner.status == "online",
+        interpret_online: None,
+        online_for_github_api: json_runner.status == "online",
+        online_state_change_since: 0,
         runner_set: runner_set.name.clone(),
         id: json_runner.id,
         name: json_runner.name,

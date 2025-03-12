@@ -5,13 +5,13 @@ use crate::{
     structs::{Config, Runner, RunnerMap, RunnerStateChange},
 };
 
-pub async fn alert_all_changes(
+pub async fn alert_all_changes_and_update_grace_period(
     cfg: &Config,
     old_runners: &RunnerMap,
-    new_runners: &RunnerMap,
+    new_runners: &mut RunnerMap,
 ) -> Result<()> {
     for (old_key, old_runner) in old_runners {
-        let new_runner = match new_runners.get(old_key) {
+        let new_runner = match new_runners.get_mut(old_key) {
             Some(r) => r,
             None => {
                 // the runner doesn't exist no more
@@ -19,20 +19,39 @@ pub async fn alert_all_changes(
                 continue;
             }
         };
-        if old_runner.online == new_runner.online {
-            // all fine, nothing changed
+
+        // TOOD: properly handle none case; this is a problem at boot up
+        if old_runner
+            .interpret_online
+            .context("the old runner needs to have interpret_online set")?
+            == new_runner.online_for_github_api
+        {
+            // reset immediately once the old state has reappeared
+            new_runner.online_state_change_since = 0;
+        } else {
+            new_runner.online_state_change_since = old_runner.online_state_change_since + 1;
+        }
+
+        if new_runner.online_state_change_since <= cfg.grace_period {
+            // all still fine
+            // If there has been a state change, it has been noted and will case an event
+            // once the grace period runs out.
             continue;
         }
 
+        // consider the state changed now
+        new_runner.interpret_online = Some(new_runner.online_for_github_api);
+
         send_alert(
             cfg,
-            if new_runner.online {
+            if new_runner.online_for_github_api {
                 RunnerStateChange::Online
             } else {
                 RunnerStateChange::Offline
             },
+            // after this old_runner isn't needed any longer
             Some(old_runner),
-            Some(new_runner),
+            Some(&new_runner),
         )
         .await?;
     }

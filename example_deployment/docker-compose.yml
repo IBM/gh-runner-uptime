@@ -9,6 +9,7 @@ services:
         restart: unless-stopped
         depends_on:
             - DockerCron
+
     DockerCron:
         image: chrisbesch/docker_cron
         volumes:

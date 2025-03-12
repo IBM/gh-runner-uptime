@@ -1,4 +1,4 @@
-use alert::alert_all_changes;
+use alert::alert_all_changes_and_update_grace_period;
 use anyhow::Result;
 use structs::{Config, RunnerMap};
 use tokio::signal::unix::{signal, SignalKind};
@@ -13,8 +13,8 @@ mod structs;
 
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
-    let new_runners = get_all_runners(cfg).await?;
-    alert_all_changes(cfg, runners, &new_runners).await?;
+    let mut new_runners = get_all_runners(cfg).await?;
+    alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners).await?;
     // only update runners when changes got transmitted successfully
     // -> retry next time when the service remains in the same new state
     *runners = new_runners;

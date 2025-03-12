@@ -16,6 +16,7 @@ struct YAMLConfig {
     pub orgs: Vec<RunnerSetYAMLConfig>,
     #[serde(default)]
     pub repos: Vec<RunnerSetYAMLConfig>,
+    pub grace_period: u8,
     #[serde(default = "default_timeout_millis")]
     pub github_timeout_millis: u64,
     #[serde(default = "default_timeout_millis")]
@@ -78,6 +79,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         runner_sets,
         github_timeout,
         inbound_timeout,
+        grace_period: yml_cfg.grace_period,
     };
     println!("Attempting GitHub connections");
     let runners = get_all_runners(&cfg).await?;
