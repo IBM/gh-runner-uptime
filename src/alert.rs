@@ -1,8 +1,11 @@
 use anyhow::{ensure, Context, Result};
 
-use crate::structs::{Config, Runner, RunnerMap, RunnerStateChange};
+use crate::{
+    inbound::send_inbound,
+    structs::{Config, Runner, RunnerMap, RunnerStateChange},
+};
 
-pub async fn alert_all_changes<'a>(
+pub async fn alert_all_changes(
     cfg: &Config,
     old_runners: RunnerMap,
     new_runners: &RunnerMap,
@@ -53,61 +56,74 @@ async fn send_alert(
         RunnerStateChange::Created => {
             ensure!(old_runner.is_none());
             let new_runner =
-                &new_runner.context("new_runner needs to be defined when runner created")?;
+                new_runner.context("new_runner needs to be defined when runner created")?;
 
             let msg = format!(
                 "Now created Runner:\n{}",
-                serde_json::to_string_pretty(&new_runner)?
+                serde_json::to_string_pretty(new_runner)?
             );
 
-            send_inbound(cfg, &msg, "Created new Runner").await?
+            send_inbound(
+                cfg,
+                &new_runner.webhook_endpoint,
+                &msg,
+                "Created new Runner",
+            )
+            .await?
         }
         RunnerStateChange::Removed => {
             let old_runner =
-                &old_runner.context("old_runner needs to be defined when runner removed")?;
+                old_runner.context("old_runner needs to be defined when runner removed")?;
             ensure!(new_runner.is_none());
 
             let msg = format!(
                 "Now removed Runner:\n{}",
-                serde_json::to_string_pretty(&old_runner)?,
+                serde_json::to_string_pretty(old_runner)?,
             );
 
-            send_inbound(cfg, &msg, "Removed Runner").await?
+            send_inbound(cfg, &old_runner.webhook_endpoint, &msg, "Removed Runner").await?
         }
         RunnerStateChange::Offline => {
             let old_runner =
-                &old_runner.context("old_runner needs to be defined when runner went offline")?;
+                old_runner.context("old_runner needs to be defined when runner went offline")?;
             let new_runner =
-                &new_runner.context("new_runner needs to be defined when runner went offline")?;
+                new_runner.context("new_runner needs to be defined when runner went offline")?;
 
             let msg = format!(
                 "Old Runner:\n{}\n\nNew Runner:\n{}",
-                serde_json::to_string_pretty(&old_runner)?,
-                serde_json::to_string_pretty(&new_runner)?
+                serde_json::to_string_pretty(old_runner)?,
+                serde_json::to_string_pretty(new_runner)?
             );
 
-            send_inbound(cfg, &msg, "Runner went Offline").await?
+            send_inbound(
+                cfg,
+                &new_runner.webhook_endpoint,
+                &msg,
+                "Runner went Offline",
+            )
+            .await?
         }
         RunnerStateChange::Online => {
             let old_runner =
-                &old_runner.context("old_runner needs to be defined when runner came online")?;
+                old_runner.context("old_runner needs to be defined when runner came online")?;
             let new_runner =
-                &new_runner.context("new_runner needs to be defined when runner came online")?;
+                new_runner.context("new_runner needs to be defined when runner came online")?;
 
             let msg = format!(
                 "Old Runner:\n{}\n\nNew Runner:\n{}",
-                serde_json::to_string_pretty(&old_runner)?,
-                serde_json::to_string_pretty(&new_runner)?
+                serde_json::to_string_pretty(old_runner)?,
+                serde_json::to_string_pretty(new_runner)?
             );
 
-            send_inbound(cfg, &msg, "Runner came Online").await?
+            send_inbound(
+                cfg,
+                &new_runner.webhook_endpoint,
+                &msg,
+                "Runner came Online",
+            )
+            .await?
         }
     }
 
-    Ok(())
-}
-
-async fn send_inbound(cfg: &Config, description: &str, summary: &str) -> Result<()> {
-    println!("Sending: {}\n{}", summary, description);
     Ok(())
 }

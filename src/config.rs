@@ -7,8 +7,8 @@ use std::fs::File;
 use std::time::Duration;
 
 use crate::github::get_all_runners;
-use crate::structs::Config;
 use crate::structs::RunnerSetConfig;
+use crate::structs::{Config, RunnerMap};
 
 #[derive(Debug, Deserialize)]
 struct YAMLConfig {
@@ -18,6 +18,8 @@ struct YAMLConfig {
     pub repos: Vec<RunnerSetYAMLConfig>,
     #[serde(default = "default_timeout_millis")]
     pub github_timeout_millis: u64,
+    #[serde(default = "default_timeout_millis")]
+    pub inbound_timeout_millis: u64,
 }
 #[derive(Debug, Deserialize)]
 struct RunnerSetYAMLConfig {
@@ -32,7 +34,7 @@ fn default_timeout_millis() -> u64 {
     30000
 }
 
-pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
+pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
     println!("Parsing configuration");
 
     let file = File::open(cfg_path).context("Unable to open config file")?;
@@ -40,6 +42,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
         from_reader(file).with_context(|| format!("Failed to parse yaml config {}", cfg_path))?;
 
     let github_timeout = Duration::from_millis(yml_cfg.github_timeout_millis);
+    let inbound_timeout = Duration::from_millis(yml_cfg.inbound_timeout_millis);
 
     let org_runner_sets = yml_cfg
         .orgs
@@ -80,10 +83,11 @@ pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
     let cfg = Config {
         runner_sets,
         github_timeout,
+        inbound_timeout,
     };
     println!("attempting GitHub connections");
-    get_all_runners(&cfg).await?;
-    Ok(cfg)
+    let runners = get_all_runners(&cfg).await?;
+    Ok((cfg, runners))
 }
 
 fn get_github_client(timeout: Duration, pat: &str) -> Result<Client> {

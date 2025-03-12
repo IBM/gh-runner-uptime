@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use anyhow::{bail, Result};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
@@ -51,22 +49,23 @@ async fn get_runners_for_set(runner_set: &RunnerSetConfig) -> Result<RunnerMap> 
     json_resp
         .runners
         .into_iter()
-        .map(|r| parse_runner(r, runner_set.name.clone()))
+        .map(|r| parse_runner(r, runner_set))
         .collect::<Result<RunnerMap>>()
 }
 
 fn parse_runner(
     json_runner: JSONRunnerResponse,
-    runner_set_name: String,
+    runner_set: &RunnerSetConfig,
 ) -> Result<(String, Runner)> {
     let runner = Runner {
-        ping_time: Utc::now().to_rfc3339(),
+        utc_ping_time: Utc::now().to_rfc3339(),
         online: json_runner.status == "online",
-        runner_set: runner_set_name,
+        runner_set: runner_set.name.clone(),
         id: json_runner.id,
         name: json_runner.name,
         os: json_runner.os,
         labels: json_runner.labels.into_iter().map(|l| l.name).collect(),
+        webhook_endpoint: runner_set.webhook_endpoint.clone(),
     };
     Ok((
         format!("{}; runner id: {}", runner.runner_set, runner.id),
