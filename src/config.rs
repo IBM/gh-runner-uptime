@@ -1,3 +1,4 @@
+use anyhow::{bail, ensure, Context, Result};
 use octocrab::Octocrab;
 use std::fs::File;
 
@@ -27,67 +28,73 @@ pub struct Config {
 }
 #[derive(Debug)]
 pub struct RunnerSetConfig {
+    pub name: String,
     pub github_endpoint: String,
     pub webhook_endpoint: String,
     pub octocrab: Octocrab,
+    pub last_online: bool,
 }
 
-pub async fn load_cfg(cfg_path: &str) -> Config {
+pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
     println!("Parsing configuration");
 
-    let file =
-        File::open(cfg_path).unwrap_or_else(|e| panic!("Unable to open config file: {:?}", e));
-    let yml_cfg: YAMLConfig = from_reader(file)
-        .unwrap_or_else(|e| panic!("Failed to parse yaml config {:?}: {:?}", cfg_path, e));
+    let file = File::open(cfg_path).context("Unable to open config file")?;
+    let yml_cfg: YAMLConfig =
+        from_reader(file).with_context(|| format!("Failed to parse yaml config {}", cfg_path))?;
 
-    let mut cfg = Config {
-        runner_sets: vec![],
-    };
-
-    cfg.runner_sets.extend(yml_cfg.orgs.into_iter().map(|org| {
-        let octocrab = Octocrab::builder()
-            .base_uri(org.github_base_uri)
-            .unwrap_or_else(|e| panic!("Invalid base uri: {:?}", e))
-            .personal_token(org.github_pat)
-            .build()
-            .unwrap_or_else(|e| {
-                panic!(
-                    "failed to build octocrab instance for org {:?}: {:?}",
-                    org.name, e
-                )
-            });
-        let github_endpoint = format!("/orgs/{:?}/actions/runners", org.name);
-        RunnerSetConfig {
-            github_endpoint,
-            webhook_endpoint: org.webhook_endpoint,
-            octocrab,
-        }
-    }));
-    cfg.runner_sets
-        .extend(yml_cfg.repos.into_iter().map(|repo| {
+    let org_runner_sets = yml_cfg
+        .orgs
+        .into_iter()
+        .map(|org| -> Result<RunnerSetConfig> {
             let octocrab = Octocrab::builder()
-                .base_uri(repo.github_base_uri)
-                .unwrap_or_else(|e| panic!("Invalid base uri: {:?}", e))
+                .base_uri(&org.github_base_uri)
+                .with_context(|| format!("Invalid base uri for org {}", org.name))?
+                .personal_token(org.github_pat)
+                .build()
+                .with_context(|| {
+                    format!("failed to build octocrab instance for org {}", org.name)
+                })?;
+            Ok(RunnerSetConfig {
+                name: format!("org: {}/{}", org.github_base_uri, org.name),
+                github_endpoint: format!(
+                    "{}/orgs/{}/actions/runners",
+                    org.github_base_uri, org.name
+                ),
+                webhook_endpoint: org.webhook_endpoint,
+                octocrab,
+                last_online: true,
+            })
+        });
+    let repo_runner_sets = yml_cfg
+        .repos
+        .into_iter()
+        .map(|repo| -> Result<RunnerSetConfig> {
+            let octocrab = Octocrab::builder()
+                .base_uri(&repo.github_base_uri)
+                .with_context(|| format!("Invalid base uri for repo {}", repo.name))?
                 .personal_token(repo.github_pat)
                 .build()
-                .unwrap_or_else(|e| {
-                    panic!(
-                        "failed to build octocrab instance for repo {:?}: {:?}",
-                        repo.name, e
-                    )
-                });
-            let github_endpoint = format!("/repo/{:?}/actions/runners", repo.name);
-            RunnerSetConfig {
-                github_endpoint,
+                .with_context(|| {
+                    format!("failed to build octocrab instance for repo {}", repo.name)
+                })?;
+            Ok(RunnerSetConfig {
+                name: format!("repo: {}/{}", repo.github_base_uri, repo.name),
+                github_endpoint: format!(
+                    "{}/repos/{}/actions/runners",
+                    repo.github_base_uri, repo.name
+                ),
                 webhook_endpoint: repo.webhook_endpoint,
                 octocrab,
-            }
-        }));
-
-    assert!(
-        cfg.runner_sets.len() != 0,
-        "at least one repo or org needs to be defined"
+                last_online: true,
+            })
+        });
+    let runner_sets = org_runner_sets
+        .chain(repo_runner_sets)
+        .collect::<Result<Vec<_>>>()?;
+    ensure!(
+        !runner_sets.is_empty(),
+        "At least one repo or org needs to be defined."
     );
 
-    cfg
+    Ok(Config { runner_sets })
 }
