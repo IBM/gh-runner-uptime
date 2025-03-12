@@ -224,7 +224,7 @@ async fn alert_grace_0_test() {
 // takes the RunnerMaps as get_all_runners would produce them
 async fn alert_test_uptime(
     states: Vec<RunnerMap>,
-    grace_period: u8,
+    grace_period: u32,
     expected_final_state: RunnerMap,
 ) {
     // wait for server

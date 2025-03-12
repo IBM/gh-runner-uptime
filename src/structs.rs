@@ -13,7 +13,7 @@ pub struct Config {
     //
     // A grace period of 0 means the online state from the GitHub API is
     // used directly for events.
-    pub grace_period: u8,
+    pub grace_period: u32,
     // used for testing
     pub allow_http: bool,
 }
@@ -38,7 +38,7 @@ pub struct Runner {
     // it does not include the grace period
     pub online_for_github_api: bool,
     // for how long is interpret_online != online_for_github_api
-    pub online_state_change_since: u8,
+    pub online_state_change_since: u32,
     pub runner_set: String,
     pub id: i64,
     pub name: String,

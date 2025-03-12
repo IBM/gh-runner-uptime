@@ -16,7 +16,7 @@ struct YAMLConfig {
     pub orgs: Vec<RunnerSetYAMLConfig>,
     #[serde(default)]
     pub repos: Vec<RunnerSetYAMLConfig>,
-    pub grace_period: u8,
+    pub grace_period: u32,
     #[serde(default = "default_timeout_millis")]
     pub github_timeout_millis: u64,
     #[serde(default = "default_timeout_millis")]
