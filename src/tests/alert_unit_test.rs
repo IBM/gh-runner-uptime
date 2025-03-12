@@ -20,6 +20,10 @@ async fn alert_grace_0_should_panic_test() {
         inbound_timeout: Duration::from_millis(30),
         grace_period,
         allow_http: false,
+        created_template_path: String::from(""),
+        removed_template_path: String::from(""),
+        online_template_path: String::from(""),
+        offline_template_path: String::from(""),
     };
 
     // initial setup
@@ -93,6 +97,10 @@ async fn alert_grace_0_test() {
         inbound_timeout: Duration::from_millis(30),
         grace_period,
         allow_http: false,
+        created_template_path: String::from(""),
+        removed_template_path: String::from(""),
+        online_template_path: String::from(""),
+        offline_template_path: String::from(""),
     };
 
     // initial setup
@@ -468,6 +476,10 @@ async fn alert_grace_3_test() {
         inbound_timeout: Duration::from_millis(30),
         grace_period,
         allow_http: false,
+        created_template_path: String::from(""),
+        removed_template_path: String::from(""),
+        online_template_path: String::from(""),
+        offline_template_path: String::from(""),
     };
 
     // initial setup

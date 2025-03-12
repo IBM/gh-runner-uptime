@@ -1,9 +1,9 @@
 [package]
-name = "github_uptime_monitor"
+name = "gh_runner_uptime"
 version = "0.1.0"
 edition = "2021"
 [[bin]]
-name = "github_uptime_monitor"
+name = "gh_runner_uptime"
 path = "src/main.rs"
 
 [dependencies]
@@ -13,4 +13,5 @@ reqwest = { version = "0.12.4", features = ["json", "native-tls-vendored"] }
 serde = { version = "1.0.202", features = ["derive"] }
 serde_json = "1.0.117"
 serde_yaml = "0.9.34"
+tera = "1.20.0"
 tokio = { version = "1.37.0", features = ["full"] }

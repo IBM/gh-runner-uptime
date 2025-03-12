@@ -5,8 +5,17 @@ use std::{collections::HashMap, time::Duration};
 #[derive(Debug)]
 pub struct Config {
     pub runner_sets: Vec<RunnerSetConfig>,
+    // this is used before constructing the config
+    #[allow(dead_code)]
     pub github_timeout: Duration,
     pub inbound_timeout: Duration,
+
+    // templates for inbound request
+    pub created_template_path: String,
+    pub removed_template_path: String,
+    pub online_template_path: String,
+    pub offline_template_path: String,
+
     // The grace period does not affect the created and removed state changes.
     // It only allows runners to briefly go offline and come back
     // without raising the alarm.

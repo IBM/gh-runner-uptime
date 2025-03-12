@@ -207,12 +207,42 @@ async fn alert_grace_0_test() {
         }),
     ]);
     let awaited_messages = HashSet::from([
-        r#"[{"summary":"Runner went Offline","event_body":"Old Runner:\n{\n  \"utc_ping_time\": \"1\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"2\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
-        r#"[{"summary":"Removed Runner","event_body":"Now removed Runner:\n{\n  \"utc_ping_time\": \"2\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
-        r#"[{"summary":"Created new Runner","event_body":"Now created Runner:\n{\n  \"utc_ping_time\": \"3\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
-        r#"[{"summary":"Created new Runner","event_body":"Now created Runner:\n{\n  \"utc_ping_time\": \"3\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
-        r#"[{"summary":"Runner went Offline","event_body":"Old Runner:\n{\n  \"utc_ping_time\": \"4\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"TempleOS\",\n  \"labels\": [\n    \"some other label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"5\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
-        r#"[{"summary":"Runner came Online","event_body":"Old Runner:\n{\n  \"utc_ping_time\": \"5\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"6\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}","type":"github_monitor"}]"#,
+        r#"[{
+    "summary": "Runner went Offline: runner-01",
+    "event_body": "Old Runner:\n{\n  \"utc_ping_time\": \"1\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"2\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
+        r#"[{
+    "summary": "Removed Runner: runner-01",
+    "event_body": "Now removed Runner:\n{\n  \"utc_ping_time\": \"2\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisTestOrg; github: https://github.com/api/v3\",\n  \"id\": 69,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
+        r#"[{
+    "summary": "Created new Runner: runner-01",
+    "event_body": "Now created Runner:\n{\n  \"utc_ping_time\": \"3\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
+        r#"[{
+    "summary": "Created new Runner: runner-01",
+    "event_body": "Now created Runner:\n{\n  \"utc_ping_time\": \"3\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
+        r#"[{
+    "summary": "Runner went Offline: runner-01",
+    "event_body": "Old Runner:\n{\n  \"utc_ping_time\": \"4\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"TempleOS\",\n  \"labels\": [\n    \"some other label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"5\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 420,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
+        r#"[{
+    "summary": "Runner came Online: runner-01",
+    "event_body": "Old Runner:\n{\n  \"utc_ping_time\": \"5\",\n  \"interpret_online\": false,\n  \"online_for_github_api\": false,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}\n\nNew Runner:\n{\n  \"utc_ping_time\": \"6\",\n  \"interpret_online\": true,\n  \"online_for_github_api\": true,\n  \"online_state_change_since\": 0,\n  \"runner_set\": \"org: chrisOtherTestOrg; github: https://github.com/api/v3\",\n  \"id\": 12,\n  \"name\": \"runner-01\",\n  \"os\": \"linux\",\n  \"labels\": [\n    \"some label\"\n  ]\n}",
+    "type_field": "github_monitor"
+}]
+"#,
     ]);
 
     tokio::join!(
@@ -237,11 +267,15 @@ async fn alert_test_uptime(
         inbound_timeout: Duration::from_millis(30),
         grace_period,
         allow_http: true,
+        created_template_path: String::from("src/tests/test_created_template.txt.j2"),
+        removed_template_path: String::from("src/tests/test_removed_template.txt.j2"),
+        online_template_path: String::from("src/tests/test_online_template.txt.j2"),
+        offline_template_path: String::from("src/tests/test_offline_template.txt.j2"),
     };
 
     let mut runners = states.next().unwrap();
     for mut new_runners in states {
-        let mut alert_handler = InboundAlertHandler::new();
+        let mut alert_handler = InboundAlertHandler::new(&cfg).unwrap();
         alert_all_changes_and_update_grace_period(
             &cfg,
             &runners,
@@ -285,8 +319,8 @@ async fn inbound_mock(address: &str, expected_messages: HashSet<&str>) {
         let payload = String::from_utf8(buf).unwrap();
         let payload = payload.trim_matches(char::from(0));
         println!(
-            "\nreceived payload:\n> {:#?}\n",
-            payload.replace("\n", "\n> ")
+            "\n### begin received payload ###\n{}\n### end payload ###\n",
+            payload
         );
         assert!(expected_payloads.remove(payload));
 

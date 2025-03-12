@@ -21,6 +21,11 @@ struct YAMLConfig {
     pub github_timeout_millis: u64,
     #[serde(default = "default_timeout_millis")]
     pub inbound_timeout_millis: u64,
+
+    pub created_template_path: String,
+    pub removed_template_path: String,
+    pub online_template_path: String,
+    pub offline_template_path: String,
 }
 #[derive(Debug, Deserialize)]
 struct RunnerSetYAMLConfig {
@@ -79,6 +84,11 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         runner_sets,
         github_timeout,
         inbound_timeout,
+        created_template_path: yml_cfg.created_template_path,
+        removed_template_path: yml_cfg.removed_template_path,
+        online_template_path: yml_cfg.online_template_path,
+        offline_template_path: yml_cfg.offline_template_path,
+
         grace_period: yml_cfg.grace_period,
         allow_http: false,
     };

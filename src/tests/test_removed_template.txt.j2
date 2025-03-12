@@ -1,0 +1,6 @@
+[{
+    "summary": "Removed Runner: {{ old_runner.name }}",
+    {#- douple json encode needed  #}
+    "event_body": "Now removed Runner:\n{{ old_runner_json | json_encode() | trim_start_matches(pat='"') | trim_end_matches(pat='"') | safe }}",
+    "type_field": "github_monitor"
+}]

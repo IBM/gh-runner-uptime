@@ -1,0 +1,6 @@
+[{
+    "summary": "Runner came Online: {{ new_runner.name }}",
+    {#- douple json encode needed  #}
+    "event_body": "Old Runner:\n{{ old_runner_json | json_encode() | trim_start_matches(pat='"') | trim_end_matches(pat='"') | safe }}\n\nNew Runner:\n{{ new_runner_json | json_encode() | trim_start_matches(pat='"') | trim_end_matches(pat='"') | safe }}",
+    "type_field": "github_monitor"
+}]

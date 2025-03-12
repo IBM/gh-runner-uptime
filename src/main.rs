@@ -24,7 +24,7 @@ mod test_alert_handler;
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
     let mut new_runners = get_all_runners(cfg, false).await?;
-    let mut alert_handler = InboundAlertHandler::new();
+    let mut alert_handler = InboundAlertHandler::new(cfg)?;
     alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners, &mut alert_handler)
         .await?;
     // only update runners when changes got transmitted successfully

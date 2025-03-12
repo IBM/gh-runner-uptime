@@ -1,8 +1,12 @@
 services:
     GitHubUptimeMonitor:
-        image: containers.github.ibmgcloud.net/dth/github-uptime-monitor:0.1.0
+        image: containers.github.ibmgcloud.net/dth/github-uptime-monitor:0.2.0
         volumes:
             - ./config.yaml:/app/config.yaml:ro
+            - ../src/tests/test_created_template.txt.j2:/app/created_template_path:ro
+            - ../src/tests/test_removed_template.txt.j2:/app/removed_template_path:ro
+            - ../src/tests/test_online_template.txt.j2:/app/online_template_path:ro
+            - ../src/tests/test_offline_template.txt.j2:/app/offline_template_path:ro
         environment:
             # when to perform ping
             CRON_TIME: "* * * * *"
