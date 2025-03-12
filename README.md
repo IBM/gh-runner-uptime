@@ -13,6 +13,8 @@ an alert is sent to a Webhook.
 The pings are initiated via the Unix SIGHUP signal.
 A different process (usually cron) sends a SIGHUP to gh_runner_uptime every user specified interval.
 
+This is a good companion for [docker-github-actions-runner](https://github.com/myoung34/docker-github-actions-runner) hosted with [Sysbox](https://github.com/nestybox/sysbox).
+
 ## Deployment
 ### Docker-Compose
 See the [example docker-compose.yml](./example_deployment/docker-compose.yml).
