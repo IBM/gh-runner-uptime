@@ -2,6 +2,9 @@
 name = "github_uptime_monitor"
 version = "0.1.0"
 edition = "2021"
+[[bin]]
+name = "github_uptime_monitor"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.83"
