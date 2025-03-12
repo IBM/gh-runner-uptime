@@ -20,7 +20,6 @@ pub async fn alert_all_changes_and_update_grace_period(
             }
         };
 
-        // TOOD: properly handle none case; this is a problem at boot up
         if old_runner
             .interpret_online
             .context("the old runner needs to have interpret_online set")?
@@ -33,7 +32,8 @@ pub async fn alert_all_changes_and_update_grace_period(
         }
 
         if new_runner.online_state_change_since <= cfg.grace_period {
-            // all still fine
+            // all still fine, keep it the way it was before
+            new_runner.interpret_online = old_runner.interpret_online;
             // If there has been a state change, it has been noted and will case an event
             // once the grace period runs out.
             continue;
@@ -41,6 +41,7 @@ pub async fn alert_all_changes_and_update_grace_period(
 
         // consider the state changed now
         new_runner.interpret_online = Some(new_runner.online_for_github_api);
+        new_runner.online_state_change_since = 0;
 
         send_alert(
             cfg,
@@ -59,6 +60,9 @@ pub async fn alert_all_changes_and_update_grace_period(
     for (new_key, new_runner) in new_runners {
         if !old_runners.contains_key(new_key) {
             // the runner hasn't existed before
+            // initialize the interpreted state to what GitHub thinks
+            // this needs to be done before sending the alert
+            new_runner.interpret_online = Some(new_runner.online_for_github_api);
             send_alert(cfg, RunnerStateChange::Created, None, Some(new_runner)).await?;
         }
     }

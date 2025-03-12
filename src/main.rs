@@ -11,9 +11,13 @@ mod github;
 mod inbound;
 mod structs;
 
+#[cfg(test)]
+#[path = "./tests/alert_test.rs"]
+mod alert_test;
+
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
-    let mut new_runners = get_all_runners(cfg).await?;
+    let mut new_runners = get_all_runners(cfg, false).await?;
     alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners).await?;
     // only update runners when changes got transmitted successfully
     // -> retry next time when the service remains in the same new state

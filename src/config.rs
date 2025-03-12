@@ -53,7 +53,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
                 name: format!("org: {}; github: {}", org.name, org.github_base_uri),
                 github_endpoint: get_github_org_endpoint(&org.github_base_uri, &org.name),
                 webhook_endpoint: org.webhook_endpoint,
-                github_client: get_github_client(github_timeout, &org.github_pat)?,
+                github_client: get_github_client(github_timeout, &org.github_pat, false)?,
             })
         });
     let repo_runner_sets = yml_cfg
@@ -64,7 +64,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
                 name: format!("repo: {}; github: {}", repo.name, repo.github_base_uri),
                 github_endpoint: get_github_repo_endpoint(&repo.github_base_uri, &repo.name),
                 webhook_endpoint: repo.webhook_endpoint,
-                github_client: get_github_client(github_timeout, &repo.github_pat)?,
+                github_client: get_github_client(github_timeout, &repo.github_pat, false)?,
             })
         });
     let runner_sets = org_runner_sets
@@ -80,8 +80,9 @@ pub async fn load_cfg(cfg_path: &str) -> Result<(Config, RunnerMap)> {
         github_timeout,
         inbound_timeout,
         grace_period: yml_cfg.grace_period,
+        allow_http: false,
     };
     println!("Attempting GitHub connections");
-    let runners = get_all_runners(&cfg).await?;
+    let runners = get_all_runners(&cfg, true).await?;
     Ok((cfg, runners))
 }

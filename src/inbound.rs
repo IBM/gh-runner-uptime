@@ -30,8 +30,8 @@ pub async fn send_inbound(
 
     // TODO: reuse client
     let client = ClientBuilder::new()
-        .https_only(true)
-        .user_agent("github uptime monitor")
+        .https_only(!cfg.allow_http)
+        .user_agent(format!("gh_runner_uptime v{}", env!("CARGO_PKG_VERSION")))
         .timeout(cfg.inbound_timeout)
         .build()?;
 

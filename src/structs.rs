@@ -14,6 +14,8 @@ pub struct Config {
     // A grace period of 0 means the online state from the GitHub API is
     // used directly for events.
     pub grace_period: u8,
+    // used for testing
+    pub allow_http: bool,
 }
 // a runner set is all the runners that belong to a repo or org or enterprise
 // one runner set will be queried per github request
@@ -26,7 +28,7 @@ pub struct RunnerSetConfig {
 }
 
 // this runner struct will be serialized for the webhook message body
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 pub struct Runner {
     pub utc_ping_time: String,
     // the state reflected in the inbound webhook events
@@ -35,6 +37,7 @@ pub struct Runner {
     // the state the GitHub API provides
     // it does not include the grace period
     pub online_for_github_api: bool,
+    // for how long is interpret_online != online_for_github_api
     pub online_state_change_since: u8,
     pub runner_set: String,
     pub id: i64,
