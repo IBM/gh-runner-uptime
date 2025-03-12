@@ -28,4 +28,3 @@ WORKDIR /app
 ENTRYPOINT ["/gh_runner_uptime"]
 
 LABEL org.opencontainers.image.source=https://github.ibmgcloud.net/dth/gh_runner_uptime
-

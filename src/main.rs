@@ -38,7 +38,7 @@ async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
 async fn main() {
     let (cfg, mut runners) = config::load_cfg("./config.yaml")
         .await
-        .unwrap_or_else(|e| panic!("{:#}", e));
+        .unwrap_or_else(|e| panic!("Fatal Error: {:#}", e));
 
     println!("Awaiting sighup");
     // wait for sighup from docker_cron container
