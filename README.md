@@ -1,4 +1,4 @@
-# GitHub Uptime Monitor
+# GitHub Self-Hosted Runner Status Monitor
 
 ### Required Permissions for GitHub PAT
 - repo
