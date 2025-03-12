@@ -48,6 +48,6 @@ async fn main() {
         stream.recv().await;
         perform_scan(&cfg, &mut runners)
             .await
-            .unwrap_or_else(|e| eprintln!("{:#}", e));
+            .unwrap_or_else(|e| eprintln!("Error: {:#}", e));
     }
 }
