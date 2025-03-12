@@ -3,12 +3,12 @@ use anyhow::Result;
 use structs::{Config, RunnerMap};
 use tokio::signal::unix::{signal, SignalKind};
 
-use crate::github::get_all_runners;
+use crate::{github::get_all_runners, inbound_alert_handler::InboundAlertHandler};
 
 mod alert;
 mod config;
 mod github;
-mod inbound;
+mod inbound_alert_handler;
 mod structs;
 
 #[cfg(test)]
@@ -18,7 +18,9 @@ mod alert_test;
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
     let mut new_runners = get_all_runners(cfg, false).await?;
-    alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners).await?;
+    let alert_handler = InboundAlertHandler {};
+    alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners, &alert_handler)
+        .await?;
     // only update runners when changes got transmitted successfully
     // -> retry next time when the service remains in the same new state
     *runners = new_runners;
