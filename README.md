@@ -46,7 +46,7 @@ The user needs to be an Owner of the organization.
 See [the docs](https://docs.github.com/en/enterprise-server@3.12/rest/actions/self-hosted-runners?apiVersion=2022-11-28#list-self-hosted-runners-for-an-organization--fine-grained-access-tokens) for more.
 
 ### Fine Grained Token (for a Repository)
-Create a fine grained token with this permission:
+Create a fine grained token with this permission for the repository the runners are registered under:
 ```
 "Administration" repository permissions (read)
 ```
