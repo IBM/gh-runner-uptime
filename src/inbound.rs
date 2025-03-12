@@ -23,7 +23,7 @@ pub async fn send_inbound(
     // multiple events could be batched but aren't as of now
     let event_body = serde_json::to_string(&vec![JSONInboundEvent {
         summary: summary.to_string(),
-        event_body: summary.to_string(),
+        event_body: event_body.to_string(),
         type_field: "github_monitor".to_string(),
     }])?;
 

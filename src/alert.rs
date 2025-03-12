@@ -7,10 +7,10 @@ use crate::{
 
 pub async fn alert_all_changes(
     cfg: &Config,
-    old_runners: RunnerMap,
+    old_runners: &RunnerMap,
     new_runners: &RunnerMap,
 ) -> Result<()> {
-    for (old_key, old_runner) in &old_runners {
+    for (old_key, old_runner) in old_runners {
         let new_runner = match new_runners.get(old_key) {
             Some(r) => r,
             None => {

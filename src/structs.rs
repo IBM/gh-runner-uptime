@@ -2,7 +2,6 @@ use reqwest::Client;
 use serde::Serialize;
 use std::{collections::HashMap, time::Duration};
 
-// config //
 #[derive(Debug)]
 pub struct Config {
     pub runner_sets: Vec<RunnerSetConfig>,
@@ -35,8 +34,11 @@ pub struct Runner {
 pub enum RunnerStateChange {
     // a new runner just popped up
     Created,
+    // a known runner isn't there anymore
     Removed,
+    // a runner was online the last time and is now offline
     Offline,
+    // a runner was offline the last time and is now online
     Online,
 }
 
