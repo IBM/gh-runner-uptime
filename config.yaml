@@ -1,0 +1,5 @@
+orgs:
+  - name: test
+    github_base_uri: hihi
+    github_pat: hihi
+    webhook_endpoint: hihi
