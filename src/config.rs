@@ -32,6 +32,7 @@ pub struct RunnerSetConfig {
     pub github_endpoint: String,
     pub webhook_endpoint: String,
     pub octocrab: Octocrab,
+    // was the runner online at the last ping
     pub last_online: bool,
 }
 
@@ -55,7 +56,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
                     format!("failed to build octocrab instance for org {}", org.name)
                 })?;
             Ok(RunnerSetConfig {
-                name: format!("org: {}/{}", org.github_base_uri, org.name),
+                name: format!("org: {}; github: {}", org.name, org.github_base_uri),
                 github_endpoint: format!(
                     "{}/orgs/{}/actions/runners",
                     org.github_base_uri, org.name
@@ -78,7 +79,7 @@ pub async fn load_cfg(cfg_path: &str) -> Result<Config> {
                     format!("failed to build octocrab instance for repo {}", repo.name)
                 })?;
             Ok(RunnerSetConfig {
-                name: format!("repo: {}/{}", repo.github_base_uri, repo.name),
+                name: format!("repo: {}; github: {}", repo.name, repo.github_base_uri),
                 github_endpoint: format!(
                     "{}/repos/{}/actions/runners",
                     repo.github_base_uri, repo.name

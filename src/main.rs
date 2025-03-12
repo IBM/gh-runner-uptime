@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use http_body_util::BodyExt;
+use std::{borrow::Borrow, str::from_utf8};
 
 mod config;
 
@@ -11,15 +12,15 @@ async fn is_runner_set_online(runner_set: &mut config::RunnerSetConfig) -> Resul
         .await
         .with_context(|| format!("runner api request failed for {}", runner_set.name))?;
 
+    println!("{:?}", resp.headers());
     if !resp.status().is_success() {
         bail!(
-            "github runner api request returned status {} for {}",
+            "github runner api request returned status {} for {}; return body: {}",
             resp.status(),
-            runner_set.name
+            runner_set.name,
+            from_utf8(&resp.into_body().collect().await?.to_bytes())?
         );
     }
-    let t = resp.into_body().collect().await?.to_bytes();
-    println!("{:?}", t);
 
     Ok(false)
 }
