@@ -1,10 +1,10 @@
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{bail, Context, Result};
 use reqwest::ClientBuilder;
 use serde::Serialize;
 
 use crate::{
     alert::AlertHandler,
-    structs::{Config, Runner, RunnerStateChange},
+    structs::{Config, RunnerStateChange},
 };
 
 // the struct to be serialized and sent to the inbound webhook
@@ -19,39 +19,23 @@ struct JSONInboundEvent {
 pub struct InboundAlertHandler {}
 
 impl AlertHandler for InboundAlertHandler {
-    async fn send_alert(
-        &self,
-        cfg: &Config,
-        change: RunnerStateChange,
-        old_runner: Option<&Runner>,
-        new_runner: Option<&Runner>,
-    ) -> Result<()> {
+    async fn send_alert<'a>(&self, cfg: &Config, change: RunnerStateChange<'a>) -> Result<()> {
         let (endpoint, msg, summary) = match change {
-            RunnerStateChange::Created => {
-                ensure!(old_runner.is_none());
-                let new_runner =
-                    new_runner.context("new_runner needs to be defined when runner created")?;
+            RunnerStateChange::Created(new_runner) => {
                 let msg = format!(
                     "Now created Runner:\n{}",
                     serde_json::to_string_pretty(new_runner)?
                 );
                 (&new_runner.webhook_endpoint, msg, "Created new Runner")
             }
-            RunnerStateChange::Removed => {
-                let old_runner =
-                    old_runner.context("old_runner needs to be defined when runner removed")?;
-                ensure!(new_runner.is_none());
+            RunnerStateChange::Removed(old_runner) => {
                 let msg = format!(
                     "Now removed Runner:\n{}",
                     serde_json::to_string_pretty(old_runner)?,
                 );
                 (&old_runner.webhook_endpoint, msg, "Removed Runner")
             }
-            RunnerStateChange::Offline => {
-                let old_runner = old_runner
-                    .context("old_runner needs to be defined when runner went offline")?;
-                let new_runner = new_runner
-                    .context("new_runner needs to be defined when runner went offline")?;
+            RunnerStateChange::Offline(old_runner, new_runner) => {
                 let msg = format!(
                     "Old Runner:\n{}\n\nNew Runner:\n{}",
                     serde_json::to_string_pretty(old_runner)?,
@@ -59,11 +43,7 @@ impl AlertHandler for InboundAlertHandler {
                 );
                 (&new_runner.webhook_endpoint, msg, "Runner went Offline")
             }
-            RunnerStateChange::Online => {
-                let old_runner =
-                    old_runner.context("old_runner needs to be defined when runner came online")?;
-                let new_runner =
-                    new_runner.context("new_runner needs to be defined when runner came online")?;
+            RunnerStateChange::Online(old_runner, new_runner) => {
                 let msg = format!(
                     "Old Runner:\n{}\n\nNew Runner:\n{}",
                     serde_json::to_string_pretty(old_runner)?,
@@ -78,6 +58,10 @@ impl AlertHandler for InboundAlertHandler {
 }
 
 impl InboundAlertHandler {
+    pub fn new() -> Self {
+        InboundAlertHandler {}
+    }
+
     async fn send_inbound(
         &self,
         cfg: &Config,

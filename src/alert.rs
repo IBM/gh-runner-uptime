@@ -1,15 +1,9 @@
 use anyhow::{Context, Result};
 
-use crate::structs::{Config, Runner, RunnerMap, RunnerStateChange};
+use crate::structs::{Config, RunnerMap, RunnerStateChange};
 
 pub trait AlertHandler {
-    async fn send_alert(
-        &self,
-        cfg: &Config,
-        change: RunnerStateChange,
-        old_runner: Option<&Runner>,
-        new_runner: Option<&Runner>,
-    ) -> Result<()>;
+    async fn send_alert(&self, cfg: &Config, change: RunnerStateChange) -> Result<()>;
 }
 
 pub async fn alert_all_changes_and_update_grace_period(
@@ -24,7 +18,7 @@ pub async fn alert_all_changes_and_update_grace_period(
             None => {
                 // the runner doesn't exist no more
                 alert_handler
-                    .send_alert(cfg, RunnerStateChange::Removed, Some(old_runner), None)
+                    .send_alert(cfg, RunnerStateChange::Removed(old_runner))
                     .await?;
                 continue;
             }
@@ -57,13 +51,10 @@ pub async fn alert_all_changes_and_update_grace_period(
             .send_alert(
                 cfg,
                 if new_runner.online_for_github_api {
-                    RunnerStateChange::Online
+                    RunnerStateChange::Online(old_runner, new_runner)
                 } else {
-                    RunnerStateChange::Offline
+                    RunnerStateChange::Offline(old_runner, new_runner)
                 },
-                // after this old_runner isn't needed any longer
-                Some(old_runner),
-                Some(&new_runner),
             )
             .await?;
     }
@@ -75,7 +66,7 @@ pub async fn alert_all_changes_and_update_grace_period(
             // this needs to be done before sending the alert
             new_runner.interpret_online = Some(new_runner.online_for_github_api);
             alert_handler
-                .send_alert(cfg, RunnerStateChange::Created, None, Some(new_runner))
+                .send_alert(cfg, RunnerStateChange::Created(new_runner))
                 .await?;
         }
     }

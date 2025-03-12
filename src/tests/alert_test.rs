@@ -387,7 +387,7 @@ async fn alert_test_uptime(
 
     let mut runners = states.next().unwrap();
     for mut new_runners in states {
-        let alert_handler = InboundAlertHandler {};
+        let alert_handler = InboundAlertHandler::new();
         alert_all_changes_and_update_grace_period(&cfg, &runners, &mut new_runners, &alert_handler)
             .await
             .unwrap();

@@ -14,11 +14,13 @@ mod structs;
 #[cfg(test)]
 #[path = "./tests/alert_test.rs"]
 mod alert_test;
+// #[path = "./tests/test_alert_handler.rs"]
+// mod test_alert_handler;
 
 async fn perform_scan(cfg: &Config, runners: &mut RunnerMap) -> Result<()> {
     println!("Received sighup; starting scan");
     let mut new_runners = get_all_runners(cfg, false).await?;
-    let alert_handler = InboundAlertHandler {};
+    let alert_handler = InboundAlertHandler::new();
     alert_all_changes_and_update_grace_period(cfg, runners, &mut new_runners, &alert_handler)
         .await?;
     // only update runners when changes got transmitted successfully

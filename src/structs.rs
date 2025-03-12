@@ -50,15 +50,17 @@ pub struct Runner {
     pub webhook_endpoint: String,
 }
 
-pub enum RunnerStateChange {
+pub enum RunnerStateChange<'a> {
     // a new runner just popped up
-    Created,
+    Created(&'a Runner),
     // a known runner isn't there anymore
-    Removed,
+    Removed(&'a Runner),
     // a runner was online the last time and is now offline
-    Offline,
+    // old runner, new runner
+    Offline(&'a Runner, &'a Runner),
     // a runner was offline the last time and is now online
-    Online,
+    // old runner, new runner
+    Online(&'a Runner, &'a Runner),
 }
 
 pub type RunnerMap = HashMap<String, Runner>;
